@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'optparse'
+
 require_relative 'loggable'
 require_relative 'version'
 
@@ -36,6 +37,10 @@ module SimpleWebFetcher
       !!@options[:show_metadata]
     end
 
+    def use_local_driver?
+      !!@options[:use_local_driver]
+    end
+
     def debug?
       !!@options[:debug]
     end
@@ -50,6 +55,10 @@ module SimpleWebFetcher
 
         opts.on('--metadata', 'Prints the metadata of website when fetching') do
           @options[:show_metadata] = true
+        end
+
+        opts.on('--use-local-driver', 'Uses local chrome webdriver. You need to add chromedriver to your $PATH.') do
+          @options[:use_local_driver] = true
         end
 
         opts.on('--debug', 'Prints debug level logs') do
