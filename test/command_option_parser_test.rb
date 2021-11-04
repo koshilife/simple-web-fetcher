@@ -108,14 +108,6 @@ module SimpleWebFetcher
       assert(@dummy_io.string.empty?)
     end
 
-    def test_that_it_parse_local_driver_option
-      argv = ['--use-local-driver', @valid_url1]
-      parser = @subject.new(argv, logging_io: @dummy_io)
-      assert(parser.use_local_driver?)
-      assert([@valid_url1], parser.urls)
-      assert(@dummy_io.string.empty?)
-    end
-
     def test_that_it_parse_debug_option
       argv = ['--debug', @valid_url1]
       parser = @subject.new(argv, logging_io: @dummy_io)
@@ -125,10 +117,9 @@ module SimpleWebFetcher
     end
 
     def test_that_it_parse_many_options
-      argv = ['--metadata', '--use-local-driver', '--debug', @valid_url1, @valid_url2]
+      argv = ['--metadata', '--debug', @valid_url1, @valid_url2]
       parser = @subject.new(argv, logging_io: @dummy_io)
       assert(parser.debug?)
-      assert(parser.use_local_driver?)
       assert(parser.show_metadata?)
       assert([@valid_url1, @valid_url2], parser.urls)
       assert(@dummy_io.string.empty?)

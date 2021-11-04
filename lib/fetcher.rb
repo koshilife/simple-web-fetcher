@@ -9,15 +9,12 @@ module SimpleWebFetcher
   class Fetcher
     include Loggable
 
-    DEFAULT_REMOTE_DRIVER_URL = 'http://127.0.0.1:4444/wd/hub'
-    DEFAULT_REMOTE_DRIVER_READ_TIMEOUT = 180
     DEFAULT_DOWNLOADS_DIR_PATH = File.expand_path(File.join(__dir__, '../tmp/downloads'))
     DEFAULT_HISTORY_DATA_PATH = File.expand_path(File.join(__dir__, '../tmp/history.json'))
 
-    def initialize(cmd_options = nil, show_metadata: false, use_local_driver: false, is_debug: false, logging_io: nil)
+    def initialize(cmd_options = nil, show_metadata: false, is_debug: false, logging_io: nil)
       @cmd_options = cmd_options
       @show_metadata = show_metadata
-      @use_local_driver = use_local_driver
       @is_debug = is_debug
       @logging_io = logging_io
 
@@ -81,24 +78,24 @@ module SimpleWebFetcher
     end
 
     def setup_driver
-      use_local_driver? ? setup_local_chrome_driver : setup_remote_chrome_driver
+      setup_local_chrome_driver
     rescue StandardError => e
       log_debug_for_exception(e)
-      log_error("The webdriver connection is something wrong. You need to start webdriver before use this. use_local_driver:#{use_local_driver?}")
+      err_msg = 'The webdriver connection is something wrong. You need to add chromedriver to your $PATH.'
+      err_msg += ' You can get more information if use with `--debug` option.' unless debug?
+      log_error(err_msg)
       exit(false)
     end
 
     def setup_local_chrome_driver
-      @driver = Selenium::WebDriver.for(:chrome)
+      @driver = Selenium::WebDriver.for(:chrome, capabilities: chrome_options)
     end
 
-    def setup_remote_chrome_driver
-      client = Selenium::WebDriver::Remote::Http::Default.new
-      client.read_timeout = DEFAULT_REMOTE_DRIVER_READ_TIMEOUT
-      @driver = Selenium::WebDriver.for(:remote,
-                                        url: remote_url,
-                                        capabilities: Selenium::WebDriver::Options.chrome,
-                                        http_client: client)
+    def chrome_options
+      opts = Selenium::WebDriver::Options.chrome
+      opts.add_argument('--headless')
+      opts.add_argument('--no-sandbox')
+      opts
     end
 
     def save_current_page_source(url)
@@ -114,7 +111,7 @@ module SimpleWebFetcher
     end
 
     def saving_file_name(url)
-      "#{URI.parse(url).host}_#{Time.now.strftime('%Y%m%d_%H%M%S')}.html"
+      "#{URI.parse(url).host}_#{Time.now.utc.strftime('%Y%m%d_%H%M%S')}.html"
     end
 
     def log_current_page_metadata(last_fetched_at)
@@ -170,24 +167,16 @@ module SimpleWebFetcher
       @show_metadata || !!@cmd_options&.show_metadata?
     end
 
-    def use_local_driver?
-      @use_local_driver || !!@cmd_options&.use_local_driver?
-    end
-
     def debug?
       @is_debug || !!@cmd_options&.debug?
     end
 
-    def remote_url
-      @cmd_options&.options&.dig(:remote_url) || DEFAULT_REMOTE_DRIVER_URL
-    end
-
     def downloads_dir_path
-      @cmd_options&.options&.dig(:downloads_dir_path) || DEFAULT_DOWNLOADS_DIR_PATH
+      DEFAULT_DOWNLOADS_DIR_PATH
     end
 
     def history_data_path
-      @cmd_options&.options&.dig(:history_data_path) || DEFAULT_HISTORY_DATA_PATH
+      DEFAULT_HISTORY_DATA_PATH
     end
   end
 end
