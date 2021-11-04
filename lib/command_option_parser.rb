@@ -1,10 +1,13 @@
 # frozen_string_literal: true
 
 require 'optparse'
+require_relative 'loggable'
 require_relative 'version'
 
 module SimpleWebFetcher
   class CommandOptionParser
+    include Loggable
+
     module ExeMode
       CONTINUE = :continue
       EXIT_SUCCESS = :exit_success
@@ -18,19 +21,19 @@ module SimpleWebFetcher
 
     attr_reader :options, :urls
 
-    def initialize(argv = ARGV, logging_io = nil)
+    def initialize(argv = ARGV, logging_io: nil)
       @logging_io = logging_io
       setup_parser_and_parse(argv)
     rescue StandardError => e
-      log("OptionParseError: #{e.class} is occured. #{e.message}")
+      log_error("#{e.class} is occured. #{e.message}")
       print_help
       @exe_mode = ExeMode::EXIT_FAILURE
     ensure
       continue_or_exit
     end
 
-    def metadata?
-      !!@options[:metadata]
+    def show_metadata?
+      !!@options[:show_metadata]
     end
 
     def debug?
@@ -43,10 +46,10 @@ module SimpleWebFetcher
       @options = {}
       @exe_mode = ExeMode::CONTINUE
       @parser = OptionParser.new do |opts|
-        opts.banner = 'Usage: simple_web_fetcher.rb [options] http://example.com/foo.html [http://sub.example.com/bar.html]'
+        opts.banner = 'Usage: simple_web_fetcher.rb [options] http://example.com/one.html [http://example.com/two.html]'
 
         opts.on('--metadata', 'Prints the metadata of website when fetching') do
-          @options[:metadata] = true
+          @options[:show_metadata] = true
         end
 
         opts.on('--debug', 'Prints debug level logs') do
@@ -72,17 +75,17 @@ module SimpleWebFetcher
         is_valid, err_msg = valid_urls?
         unless is_valid
           log(err_msg)
-          exit(1)
+          exit(false)
         end
         nil # continue to main procedure
       when ExeMode::EXIT_SUCCESS
-        exit(0)
+        exit(true)
       when ExeMode::EXIT_FAILURE
-        exit(1)
+        exit(false)
       else
-        log("Error: ExeMode is unknown. #{@exe_mode}")
+        log_error("ExeMode is unknown. @exe_mode:#{@exe_mode}")
         print_help
-        exit(1)
+        exit(false)
       end
     end
 
@@ -101,14 +104,6 @@ module SimpleWebFetcher
       end
 
       [true, nil]
-    end
-
-    def log(msg)
-      if @logging_io.respond_to?(:write)
-        @logging_io.write("#{msg}\n")
-      else
-        puts(msg)
-      end
     end
   end
 end
