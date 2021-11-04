@@ -1,14 +1,16 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-require_relative 'version'
+require_relative 'command_option_parser'
+require_relative 'fetcher'
 
 module SimpleWebFetcher
-  class Fetcher
-    def self.main
-      puts "Hello SimpleWebFetcher! v#{VERSION}"
-    end
+  def fetch
+    opts = CommandOptionParser.new(ARGV)
+    fetcher = Fetcher.new(opts)
+    fetcher.fetch_and_save_all(opts.urls)
   end
+  module_function :fetch
 end
 
-SimpleWebFetcher::Fetcher.main
+SimpleWebFetcher.fetch
