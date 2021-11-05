@@ -1,19 +1,44 @@
-FROM ruby:2.7.4
+FROM ubuntu:18.04
 
-RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
-    && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
-    && apt-get update  \
-    && apt-get install -y google-chrome-stable
+ENV LANG C.UTF-8
 
-RUN CHROMEDRIVER_VERSION=`curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE` \
-    && curl -sS -o /tmp/chromedriver_linux64.zip http://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip \
-    && unzip /tmp/chromedriver_linux64.zip \
-    && mv chromedriver /usr/local/bin/
+RUN apt update -y \
+    && apt upgrade -y \
+    && apt autoremove -y
 
+#
+# setup Ruby
+#
+RUN apt install -y curl git build-essential libssl-dev libreadline-dev zlib1g-dev
+
+RUN git clone https://github.com/rbenv/rbenv.git ~/.rbenv && \
+    echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc && \
+    echo 'eval "$(rbenv init -)"' >> ~/.bashrc
+
+ENV PATH /root/.rbenv/shims:/root/.rbenv/bin:$PATH
+
+RUN git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build && \
+    rbenv install 2.7.4 && \
+    rbenv global 2.7.4 && \
+    rbenv exec gem install bundler
+
+#
+# setup Firefox
+#
+RUN apt install -y firefox firefox-geckodriver
+
+#
+# setup Chromium
+#
+RUN DEBIAN_FRONTEND=noninteractive apt install -y chromium-browser chromium-chromedriver
+
+#
+# setup this tool
+#
 WORKDIR /app
 COPY Gemfile /app/Gemfile
 COPY Gemfile.lock /app/Gemfile.lock
 COPY lib /app/lib
 RUN bundle install
 
-ENTRYPOINT [ "ruby", "lib/simple_web_fetcher.rb" ]
+ENTRYPOINT [ "./lib/simple_web_fetcher.rb" ]

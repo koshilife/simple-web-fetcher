@@ -33,6 +33,10 @@ module SimpleWebFetcher
       continue_or_exit
     end
 
+    def browser
+      @options[:browser]
+    end
+
     def show_metadata?
       !!@options[:show_metadata]
     end
@@ -48,6 +52,14 @@ module SimpleWebFetcher
       @exe_mode = ExeMode::CONTINUE
       @parser = OptionParser.new do |opts|
         opts.banner = 'Usage: simple_web_fetcher.rb [options] http://example.com/one.html [http://example.com/two.html]'
+
+        opts.on('--chrome', 'Uses chrome') do
+          @options[:browser] = :chrome
+        end
+
+        opts.on('--firefox', 'Uses firefox (Default)') do
+          @options[:browser] = :firefox
+        end
 
         opts.on('--metadata', 'Prints the metadata of website when fetching') do
           @options[:show_metadata] = true

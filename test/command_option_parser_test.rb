@@ -28,6 +28,11 @@ module SimpleWebFetcher
       parser = @subject.new(argv, logging_io: @dummy_io)
       assert_equal(argv, parser.urls)
       assert(@dummy_io.string.empty?)
+
+      # check whether is set default value each option
+      assert_nil(parser.browser)
+      assert_equal(false, parser.show_metadata?)
+      assert_equal(false, parser.debug?)
     end
 
     def test_that_it_parse_multi_url
@@ -100,6 +105,22 @@ module SimpleWebFetcher
       assert_equal("#{@help_msg}\n", @dummy_io.string)
     end
 
+    def test_that_it_parse_chrome_option
+      argv = ['--chrome', @valid_url1]
+      parser = @subject.new(argv, logging_io: @dummy_io)
+      assert_equal(parser.browser, :chrome)
+      assert([@valid_url1], parser.urls)
+      assert(@dummy_io.string.empty?)
+    end
+
+    def test_that_it_parse_firefox_option
+      argv = ['--firefox', @valid_url1]
+      parser = @subject.new(argv, logging_io: @dummy_io)
+      assert_equal(parser.browser, :firefox)
+      assert([@valid_url1], parser.urls)
+      assert(@dummy_io.string.empty?)
+    end
+
     def test_that_it_parse_metadata_option
       argv = ['--metadata', @valid_url1]
       parser = @subject.new(argv, logging_io: @dummy_io)
@@ -117,10 +138,11 @@ module SimpleWebFetcher
     end
 
     def test_that_it_parse_many_options
-      argv = ['--metadata', '--debug', @valid_url1, @valid_url2]
+      argv = ['--chrome', '--firefox', '--metadata', '--debug', @valid_url1, @valid_url2]
       parser = @subject.new(argv, logging_io: @dummy_io)
-      assert(parser.debug?)
+      assert_equal(parser.browser, :firefox)
       assert(parser.show_metadata?)
+      assert(parser.debug?)
       assert([@valid_url1, @valid_url2], parser.urls)
       assert(@dummy_io.string.empty?)
     end
