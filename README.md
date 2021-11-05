@@ -69,7 +69,7 @@ $ ls ./tmp/downloads
 rubygems.org_20211104_163243.html       www.google.com_20211104_163241.html
 ```
 
-Using with `--metadata` option, you can see the site and previous crawing information like below.
+Using with `--metadata` option, you can see the website and the time when you fetched information like below.
 
 ```.sh
 $ ./lib/simple_web_fetcher.rb --metadata https://rubygems.org https://www.google.com
