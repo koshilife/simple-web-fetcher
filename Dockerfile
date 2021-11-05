@@ -23,6 +23,11 @@ RUN git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-buil
     rbenv exec gem install bundler
 
 #
+# setup Firefox
+#
+RUN apt install -y firefox firefox-geckodriver
+
+#
 # setup Chromium
 #
 RUN DEBIAN_FRONTEND=noninteractive apt install -y chromium-browser chromium-chromedriver

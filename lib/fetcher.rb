@@ -78,16 +78,24 @@ module SimpleWebFetcher
     end
 
     def setup_driver
-      setup_local_chrome_driver
+      case @cmd_options&.browser
+      when :chrome
+        setup_local_chrome_driver
+      when :firefox
+        setup_local_firefox_driver
+      else
+        setup_local_firefox_driver
+      end
     rescue StandardError => e
       log_debug_for_exception(e)
-      err_msg = 'The webdriver connection is something wrong. You need to add chromedriver to your $PATH.'
+      err_msg = 'The webdriver connection is something wrong.'
       err_msg += ' You can get more information if use with `--debug` option.' unless debug?
       log_error(err_msg)
       exit(false)
     end
 
     def setup_local_chrome_driver
+      log_debug('start to ready chrome driver.')
       @driver = Selenium::WebDriver.for(:chrome, capabilities: chrome_options)
     end
 
@@ -95,6 +103,17 @@ module SimpleWebFetcher
       opts = Selenium::WebDriver::Options.chrome
       opts.add_argument('--headless')
       opts.add_argument('--no-sandbox')
+      opts
+    end
+
+    def setup_local_firefox_driver
+      log_debug('start to ready firefox driver.')
+      @driver = Selenium::WebDriver.for(:firefox, capabilities: firefox_options)
+    end
+
+    def firefox_options
+      opts = Selenium::WebDriver::Options.firefox
+      opts.add_argument('--headless')
       opts
     end
 

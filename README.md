@@ -3,7 +3,8 @@
 [![Test](https://github.com/koshilife/simple-web-fetcher/workflows/Test/badge.svg)](https://github.com/koshilife/simple-web-fetcher/actions?query=workflow%3ATest)
 [![license](https://img.shields.io/github/license/koshilife/simple-web-fetcher)](https://github.com/koshilife/simple-web-fetcher/blob/master/LICENSE.txt)
 
-SimpleWebFetcher is a small library to fetch any web pages you like using Selenium WebDriver.
+SimpleWebFetcher is a small tool to fetch any web pages you like.
+This tool uses Selenium WebDriver.
 
 ## Setup
 
@@ -18,6 +19,8 @@ $ cd simple-web-fetcher
 $ docker build . -t simple-web-fetcher
 $ docker run --rm simple-web-fetcher --help
 Usage: simple_web_fetcher.rb [options] http://example.com/one.html [http://example.com/two.html]
+        --chrome                     Uses chrome
+        --firefox                    Uses firefox (Default)
         --metadata                   Prints the metadata of website when fetching
         --debug                      Prints debug level logs
     -v, --version                    Prints the SimpleWebFetcher version
@@ -27,22 +30,40 @@ Usage: simple_web_fetcher.rb [options] http://example.com/one.html [http://examp
 ### Else Environment
 
 Without using Docker, you can use this tool in your environment.
-Before using this tool, you need to setup [chromedriver](https://chromedriver.chromium.org/downloads).
-You can check whether chromedriver is available or not like below.
+Before using this tool, you need to setup browser and webdriver. You can use Firefox or Chromium(Google Chrome).
 
+A following commands help whether your webdriver is available.
+
+If using Firefox is like below. You can download the driver [here](https://github.com/mozilla/geckodriver/releases).
+
+```.sh
+$ geckodriver --version
+geckodriver 0.30.0 (d372710b98a6 2021-09-16 10:29 +0300)
+
+The source code of this program is available from
+testing/geckodriver in https://hg.mozilla.org/mozilla-central.
+
+This program is subject to the terms of the Mozilla Public License 2.0.
+You can obtain a copy of the license at https://mozilla.org/MPL/2.0/.
 ```
+
+If using Chromium(Google Chrome) is like below. You can download the driver [here](https://chromedriver.chromium.org/downloads).
+
+```.sh
 $ chromedriver --version
 ChromeDriver 94.0.4606.41 (333e85df3c9b656b518b5f1add5ff246365b6c24-refs/branch-heads/4606@{#845})
 ```
 
-If chromedriver is ready, you can install and then use run this tool like below.
+If your webdriver is ready, you can install and then use run this tool like below.
 
-```sh
+```.sh
 $ git clone git@github.com:koshilife/simple-web-fetcher.git
 $ cd simple-web-fetcher
 
 $ ./lib/simple_web_fetcher.rb --help
 Usage: simple_web_fetcher.rb [options] http://example.com/one.html [http://example.com/two.html]
+        --chrome                     Uses chrome
+        --firefox                    Uses firefox (Default)
         --metadata                   Prints the metadata of website when fetching
         --debug                      Prints debug level logs
     -v, --version                    Prints the SimpleWebFetcher version
@@ -85,8 +106,9 @@ last_fetch: (first time)
 
 Using with `--debug` option, you can see debug logs like below.
 
-```
+```.sh
 $ ./lib/simple_web_fetcher.rb --debug https://rubygems.org
+(DEBUG) start to ready firefox driver.
 (DEBUG) start fetching. url:https://rubygems.org
 (DEBUG) saved the page data successfully. path:./tmp/downloads/rubygems.org_20211104_163530.html
 (DEBUG) updated history data.
@@ -94,7 +116,7 @@ $ ./lib/simple_web_fetcher.rb --debug https://rubygems.org
 
 ## Test
 
-You can run tests as following.
+You can run test cases as following.
 
 ```.sh
 $ bundle exec rake test
